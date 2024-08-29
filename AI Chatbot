@@ -1,0 +1,33 @@
+from tkinter import *
+
+root = Tk()
+root.title("AI Chatbot")
+
+def send():
+    user_input = e.get()
+    send_msg = "You -> " + user_input 
+    txt.insert(END, "\n" + send_msg)
+
+    user_input = user_input.lower()
+    if user_input in ["Hello","Hi","Hii","Hiii","hi","hii","hiii","hey"]:
+        bot_response = "Bot -> Hello!"
+    elif user_input == "how are you":
+        bot_response = "Bot -> I'm fine! How about you?"
+    elif user_input in ["fine", "i am good", "i am doing good"]:
+        bot_response = "Bot -> Great! How can I help you today?"
+    else:
+        bot_response = "Bot -> Sorry, I didn't understand that."
+    
+    txt.insert(END, "\n" + bot_response)
+    e.delete(0, END)
+
+txt = Text(root)
+txt.grid(row=0, column=0, columnspan=2)
+
+e = Entry(root, width=100)
+e.grid(row=1, column=0)
+
+send_btn = Button(root, text="Send", command=send)
+send_btn.grid(row=1, column=1)
+
+root.mainloop()
