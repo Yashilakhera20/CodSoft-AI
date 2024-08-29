@@ -1,0 +1,46 @@
+import pandas as pd
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+data = {
+    'user_id': [1, 1, 1, 2, 2, 3, 3, 4],
+    'item_id': [101, 102, 103, 101, 104, 102, 105, 103],
+    'rating': [5, 3, 4, 4, 5, 2, 5, 3],
+    'item_name': ['Movie A', 'Movie B', 'Movie C', 'Movie A', 'Movie D', 'Movie B', 'Movie E', 'Movie C'],
+    'item_genre': ['Action', 'Comedy', 'Action', 'Action', 'Drama', 'Comedy', 'Drama', 'Action']
+}
+
+df = pd.DataFrame(data)
+
+tfidf = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf.fit_transform(df['item_genre'])
+
+cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+
+def get_content_recommendations(item_name, cosine_sim=cosine_sim):
+    idx = df[df['item_name'] == item_name].index[0]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:4]  
+    item_indices = [i[0] for i in sim_scores]
+    return df['item_name'].iloc[item_indices]
+
+user_item_matrix = df.pivot_table(index='user_id', columns='item_id', values='rating').fillna(0)
+
+user_sim = cosine_similarity(user_item_matrix)
+
+def get_collaborative_recommendations(user_id, user_sim=user_sim):
+    user_idx = user_id - 1
+    sim_scores = list(enumerate(user_sim[user_idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:4]  
+    user_indices = [i[0] for i in sim_scores]
+    similar_users_items = df[df['user_id'].isin(user_indices)]['item_name'].unique()
+    return similar_users_items
+
+print("Content-based recommendations for 'Movie A':")
+print(get_content_recommendations('Movie A'))
+
+print("\nCollaborative filtering recommendations for user 1:")
+print(get_collaborative_recommendations(1))
